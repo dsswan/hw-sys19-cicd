@@ -1,0 +1,35 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+  config.vm.box = "deb11-64-vg"
+  config.vm.box_check_update = false
+  config.vm.hostname = "sdvps82"
+  config.vm.network "public_network", ip: "192.168.204.192", bridge: "enp2s0"
+  config.vm.define "d11-hw-82"
+  config.vm.provider "virtualbox" do |vb|
+     vb.gui = false
+     vb.memory = "6072"
+     vb.cpus = "3"
+  end
+  config.vm.provision "shell", inline: <<-SHELL
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    # install java runtime environment
+    apt-get install -y default-jre curl
+    # install docker
+    apt-get install -y docker.io
+    # add repo and install jenkins
+    curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+    echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]   https://pkg.jenkins.io/debian-stable binary/ | sudo tee   /etc/apt/sources.list.d/jenkins.list > /dev/null
+    apt-get update -o Acquire::https::Verify-Peer=false
+    apt-get -y -o Acquire::https::Verify-Peer=false install jenkins
+    # jenkins user should be able to use docker
+    usermod -a -G docker jenkins
+    usermod -a -G docker vagrant
+    systemctl restart jenkins
+    #install GO
+    wget https://go.dev/dl/go1.20.3.linux-amd64.tar.gz
+    tar -C /usr/local -xzf go1.20.3.linux-amd64.tar.gz
+    echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
+  SHELL
+end
