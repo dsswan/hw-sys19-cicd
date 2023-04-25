@@ -1,0 +1,35 @@
+---
+- name: Setup Nginx
+  hosts: yandex_cloud
+  become: true
+
+  tasks:
+  - name: Install Nginx
+    ansible.builtin.apt:
+      package: nginx
+      state: present
+      update_cache: true
+
+  - name: Upload nginx config
+    ansible.builtin.copy:
+      src: "./default"
+      dest: "/etc/nginx/sites-enabled/default"
+    notify: Restart nginx
+
+  - name: Upload index.html
+    ansible.builtin.copy:
+      src: "./index.html"
+      dest: "/var/www/html/index.html"
+    notify: Restart nginx
+
+  - name: Enable and start nginx
+    ansible.builtin.systemd:
+      service: nginx
+      state: started
+      enabled: true
+
+  handlers:
+    - name: Restart nginx
+      ansible.builtin.systemd:
+        service: nginx
+        state: restarted

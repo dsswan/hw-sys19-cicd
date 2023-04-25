@@ -1,0 +1,17 @@
+all:
+  children:
+    vm_1:
+      hosts:
+        158.160.101.187:
+      vars:
+        ansible_connection: ssh
+        ansible_user: dml
+        ansible_ssh_private_key_file: /root/.ssh/id_rsa
+
+    vm_2:
+      hosts:
+        158.160.96.210:
+      vars:
+        ansible_connection: ssh
+        ansible_user: dml
+        ansible_ssh_private_key_file: /root/.ssh/id_rsa
